@@ -1,5 +1,10 @@
 server:
-  port: 8080
+  port: 8443
+  ssl:
+    key-store: classpath:keystore.p12
+    key-store-password: bank1234
+    key-store-type: PKCS12
+    enabled: true
 
 spring:
   application:
@@ -25,3 +30,17 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: https://www.googleapis.com/oauth2/v3/certs
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
