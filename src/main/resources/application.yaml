@@ -1,17 +1,21 @@
-
 server:
   port: 8080
-
 
 spring:
   application:
     name: bms
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/banking_db
-    username: bankadmin
-    password: bank1234
-    driver-class-name: org.postgresql.Driver
+    primary:
+      jdbc-url: jdbc:postgresql://localhost:5432/banking_db
+      username: bankadmin
+      password: bank1234
+      driver-class-name: org.postgresql.Driver
+    audit:
+      jdbc-url: jdbc:postgresql://localhost:5432/banking_audit_db
+      username: bankadmin
+      password: bank1234
+      driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
