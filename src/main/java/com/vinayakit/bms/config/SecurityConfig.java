@@ -25,6 +25,7 @@ public class SecurityConfig {
                                 "https://www.googleapis.com/oauth2/v3/certs")))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers("/api/v1/accounts/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         .anyRequest().authenticated()
                 ).build();

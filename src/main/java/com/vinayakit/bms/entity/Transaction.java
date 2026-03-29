@@ -30,7 +30,7 @@ public class Transaction extends BaseEntity {
     @Column(nullable = false, precision = 19, scale = 4)
     private BigDecimal amount;
 
-    @Column(nullable = false, precision = 19, scale = 4)
+    @Column(precision = 19, scale = 4)
     private BigDecimal balanceAfter;
 
     @Column
@@ -38,7 +38,7 @@ public class Transaction extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private TransactionStatus transactionStatus = TransactionStatus.PENDING;
+    private TransactionStatus status = TransactionStatus.PENDING;
 
     @Column
     private String failureReason;

@@ -43,7 +43,7 @@ public class Account extends BaseEntity {
     @Version
     private Long version;
 
-    private enum AccountType {
+    public enum AccountType {
         SAVINGS, CHECKING, FIXED_DEPOSIT
     }
 
