@@ -43,12 +43,15 @@ public class Transaction extends BaseEntity {
     @Column
     private String failureReason;
 
+    @Column
+    private String ipAddress;
+
     public enum TransactionType {
-        DEPOSIT, WITHDRAWAL, TRANSFER, FEE
+        DEPOSIT, WITHDRAWAL, TRANSFER, FEE, REVERSAL
     }
 
     public enum TransactionStatus {
-        PENDING, COMPLETED, FAILED
+        PENDING, COMPLETED, FAILED, REVERSED
     }
 
 }
