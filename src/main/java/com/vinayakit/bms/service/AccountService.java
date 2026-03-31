@@ -102,6 +102,9 @@ public class AccountService {
             UUID accountId,
             LocalDateTime from,
             LocalDateTime to,
+            Transaction.TransactionType type,
+            BigDecimal minAmount,
+            BigDecimal maxAmount,
             Pageable pageable
     ) {
         accountRepository.findById(accountId)
@@ -109,8 +112,11 @@ public class AccountService {
                         "Account not found with id: " + accountId
                 ));
 
+        BigDecimal min = minAmount != null ? minAmount : BigDecimal.ZERO;
+        BigDecimal max = maxAmount != null ? maxAmount : new BigDecimal("999999999");
+
         return transactionRepository
-                .findByAccountIdAndCreatedAtBetween(accountId, from, to, pageable)
+                .findWithFilters(accountId, from, to, type, min, max, pageable)
                 .map(this::maptoTransactionResponse);
     }
 

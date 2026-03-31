@@ -4,7 +4,9 @@ import com.vinayakit.bms.dto.request.CreateAccountRequest;
 import com.vinayakit.bms.dto.response.AccountResponse;
 import com.vinayakit.bms.dto.response.BalanceResponse;
 import com.vinayakit.bms.dto.response.TransactionResponse;
+import com.vinayakit.bms.entity.Transaction;
 import com.vinayakit.bms.service.AccountService;
+import com.vinayakit.bms.service.ExportService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -24,6 +28,7 @@ import java.util.UUID;
 public class AccountController {
 
     private final AccountService accountService;
+    private final ExportService exportService;
 
     @PostMapping
     public ResponseEntity<AccountResponse> createAccount(
@@ -49,6 +54,9 @@ public class AccountController {
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
             LocalDateTime to,
+            @RequestParam(required = false) Transaction.TransactionType type,
+            @RequestParam(required = false) BigDecimal minAmount,
+            @RequestParam(required = false) BigDecimal maxAmount,
             @PageableDefault(size = 20) Pageable pageable
             ) {
 
@@ -57,7 +65,7 @@ public class AccountController {
         if (to == null) to = LocalDateTime.now();
 
         return ResponseEntity.ok(
-                accountService.getStatement(accountId, from, to ,pageable)
+                accountService.getStatement(accountId, from, to , type, minAmount, maxAmount, pageable)
         );
     }
 
@@ -80,5 +88,28 @@ public class AccountController {
             @PathVariable UUID accountId
     ) {
         return ResponseEntity.ok(accountService.closeAccount(accountId));
+    }
+
+    @GetMapping("/{accountId}/export")
+    public ResponseEntity<byte[]> exportStatement(
+            @PathVariable UUID accountId,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            LocalDateTime from,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            LocalDateTime to
+    ) throws IOException {
+        if (from == null) from = LocalDateTime.now().minusDays(30);
+        if (to == null) to = LocalDateTime.now();
+
+        byte[] data = exportService.exportToExcel(accountId, from, to);
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition",
+                        "attachment; filename=statement.xlsx")
+                .header("Content-Type",
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .body(data);
     }
 }
