@@ -49,6 +49,14 @@ public class GlobalExceptionHandler {
                 "An unexpected error occurred", request.getRequestURI());
     }
 
+    @ExceptionHandler(FraudSuspectedException.class)
+    public ResponseEntity<Map<String, Object>> handleFraudSuspected(
+            FraudSuspectedException ex, HttpServletRequest request
+    ) {
+        return buildResponse(HttpStatus.FORBIDDEN,
+                ex.getMessage(), request.getRequestURI());
+    }
+
     private ResponseEntity<Map<String, Object>> buildResponse(
             HttpStatus status, String message, String path
     ) {

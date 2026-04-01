@@ -27,9 +27,16 @@ public class TransactionService {
 
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
+    private final FraudDetectionService fraudDetectionService;
 
     @Transactional
     public TransferResponse transfer(FundTransferRequest request) {
+
+        fraudDetectionService.runAllChecks(
+                request.getSourceAccountId(),
+                request.getAmount(),
+                request.getIpAddress()
+        );
 
         // Lock accounts in UUID order to prevent deadlocks
         List<UUID> ordered = List.of(request.getSourceAccountId(),
@@ -131,6 +138,13 @@ public class TransactionService {
     
     @Transactional
     public ReceiptResponse withdraw(DepositWithdrawalRequest request) {
+
+        fraudDetectionService.runAllChecks(
+                request.getAccountId(),
+                request.getAmount(),
+                request.getIpAddress()
+        );
+
         Account account = accountRepository.findById(request.getAccountId())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Account not found:" + request.getAccountId()
