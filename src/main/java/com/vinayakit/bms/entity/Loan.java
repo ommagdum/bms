@@ -11,7 +11,6 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 @Entity
 @Table(name = "loan")
 public class Loan extends BaseEntity {
@@ -40,9 +39,25 @@ public class Loan extends BaseEntity {
     @Column(nullable = false)
     private Integer tenureMonths;
 
+    @Column(precision = 19, scale = 4)
+    private BigDecimal monthlyEmi;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private LoanStatus loanStatus = LoanStatus.ACTIVE;
+    private LoanStatus loanStatus = LoanStatus.PENDING;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private LoanType loanType;
+
+    @Column
+    private String approvedBy;
+
+    @Column
+    private LocalDate approvedAt;
+
+    @Column
+    private String rejectionReason;
 
     @Column
     private LocalDate disbursedAt;
@@ -51,6 +66,10 @@ public class Loan extends BaseEntity {
     private LocalDate nextPaymentDate;
 
     public enum LoanStatus {
-        ACTIVE, PAID_OFF, DEFAULTED
+        PENDING, APPROVED, REJECTED, ACTIVE, CLOSED, DEFAULTED
+    }
+
+    public enum LoanType {
+        FLAT, REDUCING
     }
 }
