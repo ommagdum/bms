@@ -29,7 +29,7 @@ public class LoanApplicationRequest {
     @NotNull(message = "Tenure is required")
     @Min(value = 1, message = "Minimum tenure is 1 month")
     @Max(value = 360, message = "Maximum tenure is 360 month (30 years)")
-    private Integer tenureMonth;
+    private Integer tenureMonths;
 
     @NotNull(message = "Loan type is required")
     private Loan.LoanType loanType;

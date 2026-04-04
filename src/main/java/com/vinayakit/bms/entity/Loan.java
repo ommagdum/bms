@@ -33,7 +33,7 @@ public class Loan extends BaseEntity {
     @Column(nullable = false, precision = 19, scale = 4)
     private BigDecimal outstandingBalance;
 
-    @Column(nullable = false, precision = 5, scale = 4)
+    @Column(nullable = false, precision = 5, scale = 2)
     private BigDecimal interestRate;
 
     @Column(nullable = false)
