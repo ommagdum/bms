@@ -14,7 +14,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Entity
 @Table(name = "fraud_alert")
-public class FraudAlert {
+public class FraudAlert extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

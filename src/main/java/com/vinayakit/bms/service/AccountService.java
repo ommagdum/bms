@@ -53,6 +53,7 @@ public class AccountService {
                 .phone(request.getPhone())
                 .dateOfBirth(request.getDateOfBirth())
                 .address(request.getAddress())
+                .userRole(Customer.UserRole.CUSTOMER)
                 .kycStatus(Customer.KycStatus.PENDING)
                 .build();
         customerRepository.save(customer);
