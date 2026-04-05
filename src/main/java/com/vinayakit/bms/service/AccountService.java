@@ -14,6 +14,7 @@ import com.vinayakit.bms.repository.AccountRepository;
 import com.vinayakit.bms.repository.CustomerRepository;
 import com.vinayakit.bms.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,7 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -211,5 +214,13 @@ public class AccountService {
             number = "BMS" +System.currentTimeMillis();
         } while (accountRepository.existsByAccountNumber(number));
         return number;
+    }
+
+    @Transactional(readOnly = true)
+    public List<AccountResponse> getAllAccounts() {
+        return accountRepository.findAll()
+                .stream()
+                .map(account -> mapToAccountResponse(account, account.getCustomer()))
+                .collect(Collectors.toList());
     }
 }

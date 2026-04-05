@@ -14,6 +14,9 @@ import com.vinayakit.bms.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.formula.functions.T;
+import org.jspecify.annotations.Nullable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -251,5 +254,11 @@ public class TransactionService {
                 .ipAddress(t.getIpAddress())
                 .timestamp(t.getCreatedAt())
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ReceiptResponse> getAllTransactions(Pageable pageable) {
+        return transactionRepository.findAll(pageable)
+                .map(this::mapToReceipt);
     }
 }
