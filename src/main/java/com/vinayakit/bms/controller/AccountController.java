@@ -1,5 +1,6 @@
 package com.vinayakit.bms.controller;
 
+import com.vinayakit.bms.dto.request.AddAccountRequest;
 import com.vinayakit.bms.dto.request.CreateAccountRequest;
 import com.vinayakit.bms.dto.response.AccountResponse;
 import com.vinayakit.bms.dto.response.BalanceResponse;
@@ -119,5 +120,13 @@ public class AccountController {
     @GetMapping
     public ResponseEntity<List<AccountResponse>> getAllAccounts() {
         return ResponseEntity.ok(accountService.getAllAccounts());
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/existing-customer")
+    public ResponseEntity<AccountResponse> addAccountForExistingCustomer(
+            @Valid @RequestBody AddAccountRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(accountService.addAccountForExistingCustomer(request));
     }
 }

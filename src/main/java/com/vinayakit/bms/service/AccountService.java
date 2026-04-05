@@ -1,5 +1,6 @@
 package com.vinayakit.bms.service;
 
+import com.vinayakit.bms.dto.request.AddAccountRequest;
 import com.vinayakit.bms.dto.request.CreateAccountRequest;
 import com.vinayakit.bms.dto.response.AccountResponse;
 import com.vinayakit.bms.dto.response.BalanceResponse;
@@ -71,6 +72,40 @@ public class AccountService {
 
         // Record initial deposit transaction
         if (request.getInitialDeposit().compareTo(java.math.BigDecimal.ZERO) > 0) {
+            Transaction transaction = new Transaction();
+            transaction.setAccount(account);
+            transaction.setTransactionType(Transaction.TransactionType.DEPOSIT);
+            transaction.setAmount(request.getInitialDeposit());
+            transaction.setBalanceAfter(request.getInitialDeposit());
+            transaction.setDescription("Initial deposit");
+            transaction.setStatus(Transaction.TransactionStatus.COMPLETED);
+            transactionRepository.save(transaction);
+        }
+
+        return mapToAccountResponse(account, customer);
+    }
+
+    @Transactional
+    public AccountResponse addAccountForExistingCustomer(AddAccountRequest request) {
+
+        // 1. Fetch existing customer
+        Customer customer = customerRepository.findById(request.getCustomerId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Customer not found: " + request.getCustomerId()));
+
+        // 2. Create new account
+        Account account = Account.builder()
+                .customer(customer)
+                .accountNumber(generateAccountNumber())
+                .accountType(request.getAccountType())
+                .balance(request.getInitialDeposit())
+                .currency(request.getCurrency())
+                .status(Account.AccountStatus.ACTIVE)
+                .build();
+        accountRepository.save(account);
+
+        // 3. Record initial deposit if amount > 0
+        if (request.getInitialDeposit().compareTo(BigDecimal.ZERO) > 0) {
             Transaction transaction = new Transaction();
             transaction.setAccount(account);
             transaction.setTransactionType(Transaction.TransactionType.DEPOSIT);
