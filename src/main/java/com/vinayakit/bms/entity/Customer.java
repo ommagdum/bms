@@ -38,7 +38,15 @@ public class Customer extends BaseEntity {
     @Column(nullable = false)
     private KycStatus kycStatus = KycStatus.PENDING;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserRole userRole = UserRole.CUSTOMER;
+
     public enum KycStatus {
         PENDING, VERIFIED, REJECTED
+    }
+
+    public enum UserRole {
+        CUSTOMER, ADMIN
     }
 }

@@ -4,6 +4,7 @@ import com.vinayakit.bms.entity.FraudAlert;
 import com.vinayakit.bms.service.FraudDetectionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,11 +17,13 @@ public class FraudAlertController {
 
     private final FraudDetectionService fraudDetectionService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/alerts")
     public ResponseEntity<List<FraudAlert>> getAllUnresolved() {
         return ResponseEntity.ok(fraudDetectionService.getAllUnresolved());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/alerts/{accountId}")
     public ResponseEntity<List<FraudAlert>> getByAccount(
             @PathVariable UUID accountId
@@ -30,6 +33,7 @@ public class FraudAlertController {
         );
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/alerts/{alertId}/resolve")
     public ResponseEntity<FraudAlert> resolve(
             @PathVariable UUID alertId

@@ -8,6 +8,7 @@ import com.vinayakit.bms.service.TransactionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -41,6 +42,7 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.withdraw(request));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{transactionId}/rollback")
     public ResponseEntity<ReceiptResponse> rollback(
             @PathVariable UUID transactionId
@@ -48,7 +50,7 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.rollback(transactionId));
     }
 
-    @PostMapping("/{transactionId}/receipt")
+    @GetMapping("/{transactionId}/receipt")
     public ResponseEntity<ReceiptResponse> getReceipt(
             @PathVariable UUID transactionId
     ) {

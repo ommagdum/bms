@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -68,6 +69,7 @@ public class LoanController {
         return ResponseEntity.ok(loanService.getSchedule(loanId));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{loanId}/approve")
     public ResponseEntity<LoanStatusResponse> approveLoan(
             @PathVariable UUID loanId,
@@ -76,6 +78,7 @@ public class LoanController {
         return ResponseEntity.ok(loanService.approveLoan(loanId, approvedBy));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{loanId}/reject")
     public ResponseEntity<LoanStatusResponse> rejectLoan(
             @PathVariable UUID loanId,
