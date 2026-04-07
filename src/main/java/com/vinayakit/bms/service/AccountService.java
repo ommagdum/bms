@@ -259,4 +259,45 @@ public class AccountService {
                 .map(account -> mapToAccountResponse(account, account.getCustomer()))
                 .collect(Collectors.toList());
     }
+
+    @Transactional(readOnly = true)
+    public List<AccountResponse> getMyAccounts(String email) {
+        Customer customer = customerRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Customer not found: " + email));
+        return accountRepository.findByCustomerId(customer.getId())
+                .stream()
+                .map(account -> mapToAccountResponse(account, customer))
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public Page<TransactionResponse> getMyStatement(
+            UUID accountId,
+            String email,
+            LocalDateTime from,
+            LocalDateTime to,
+            Transaction.TransactionType type,
+            BigDecimal minAmount,
+            BigDecimal maxAmount,
+            Pageable pageable) {
+
+        // 1. Fetch account
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Account not found: " + accountId));
+
+        // 2. Verify ownership — customer can only see their own account
+        if (!account.getCustomer().getEmail().equals(email)) {
+            throw new AccountStatusException(
+                    "Access denied: this account does not belong to you");
+        }
+
+        BigDecimal min = minAmount != null ? minAmount : BigDecimal.ZERO;
+        BigDecimal max = maxAmount != null ? maxAmount : new BigDecimal("999999999");
+
+        return transactionRepository
+                .findWithFilters(accountId, from, to, type, min, max, pageable)
+                .map(this::maptoTransactionResponse);
+    }
 }

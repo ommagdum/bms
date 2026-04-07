@@ -32,6 +32,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints
                         .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/api/v1/customers/me").authenticated()
                         // Admin only
                         .requestMatchers("/api/v1/reports/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/customers/**").hasRole("ADMIN")

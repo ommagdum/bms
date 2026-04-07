@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -128,5 +129,34 @@ public class AccountController {
             @Valid @RequestBody AddAccountRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(accountService.addAccountForExistingCustomer(request));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<List<AccountResponse>> getMyAccounts(
+            Principal principal) {
+        return ResponseEntity.ok(
+                accountService.getMyAccounts(principal.getName()));
+    }
+
+    @GetMapping("/me/statement/{accountId}")
+    public ResponseEntity<Page<TransactionResponse>> getMyStatement(
+            @PathVariable UUID accountId,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to,
+            @RequestParam(required = false) Transaction.TransactionType type,
+            @RequestParam(required = false) BigDecimal minAmount,
+            @RequestParam(required = false) BigDecimal maxAmount,
+            @PageableDefault(size = 20) Pageable pageable,
+            Principal principal) {
+
+        if (from == null) from = LocalDateTime.now().minusDays(30);
+        if (to == null) to = LocalDateTime.now();
+
+        return ResponseEntity.ok(
+                accountService.getMyStatement(
+                        accountId, principal.getName(),
+                        from, to, type, minAmount, maxAmount, pageable));
     }
 }
