@@ -261,4 +261,12 @@ public class LoanService {
         response.setAppliedAt(loan.getCreatedAt() != null ? loan.getCreatedAt().toLocalDate() : LocalDate.now());
         return response;
     }
+
+    public List<LoanStatusResponse> getAllLoans() {
+        return loanRepository.findAll()
+                .stream()
+                .map(this::mapToStatusResponse)
+                .collect(Collectors.toList());
+    }
+
 }

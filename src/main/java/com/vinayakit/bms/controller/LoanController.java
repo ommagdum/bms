@@ -6,7 +6,9 @@ import com.vinayakit.bms.dto.response.AmortizationScheduleResponse;
 import com.vinayakit.bms.dto.response.EmiCalculationResponse;
 import com.vinayakit.bms.dto.response.LoanApplicationResponse;
 import com.vinayakit.bms.dto.response.LoanStatusResponse;
+import com.vinayakit.bms.entity.Customer;
 import com.vinayakit.bms.entity.Loan;
+import com.vinayakit.bms.repository.LoanRepository;
 import com.vinayakit.bms.scheduler.LoanRepaymentScheduler;
 import com.vinayakit.bms.service.LoanService;
 import jakarta.validation.Valid;
@@ -28,6 +30,12 @@ public class LoanController {
     private final LoanService loanService;
     private final LoanRepaymentScheduler loanRepaymentScheduler;
 
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping
+    public ResponseEntity<List<LoanStatusResponse>> getAllLoans() {
+        return ResponseEntity.ok(loanService.getAllLoans());
+    }
 
     @PostMapping("/apply")
     public ResponseEntity<LoanApplicationResponse> applyForLoan(
