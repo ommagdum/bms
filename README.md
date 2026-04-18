@@ -1,41 +1,86 @@
 # Banking Management System (BMS) - Backend
 
-This is the backend service for the Banking Management System, providing robust APIs for banking operations, user authentication, and profile management.
+Welcome to the **Banking Management System (BMS)** backend repository! This project provides a robust, scalable, and secure API for core banking operations, user authentication, loan processing, and financial reporting. 
+
+## Table of Contents
+- [Tech Stack](#tech-stack)
+- [Architecture & Database](#architecture--database)
+- [Key Features](#key-features)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [API Endpoints Overview](#api-endpoints-overview)
+- [Google Authentication Integration](#google-authentication-integration)
+- [Scheduled Tasks & Schedulers](#scheduled-tasks--schedulers)
+
+---
 
 ## Tech Stack
-- **Java 21**, **Spring Boot**
+- **Java 21** and **Spring Boot 3.2+**
 - **Spring Security** & **OAuth2 Resource Server**
-- **Spring Data JPA** & **PostgreSQL**
-- **ShedLock** (scheduled task coordination)
-- **Bucket4j** (rate limiting)
-- **Apache POI** (document generation)
+- **Spring Data JPA** & **Hibernate**
+- **PostgreSQL** (Primary DB & Audit DB)
+- **ShedLock** (Distributed lock for scheduled tasks)
+- **Bucket4j** (API Rate limiting)
+- **Apache POI** (Excel document generation and export)
 - **Lombok**, **Actuator**
 
-## Features
-- **User Authentication:** Secure access control including role-based permissions (Customer vs. Admin).
-- **Google Authentication:** Integrated Google SSO via Spring Security OAuth2. Securely validates tokens provided by the Google login flow.
-- **Transactions & Accounts:** Core APIs for handling account balances, deposits, withdrawals, and money transfers.
-- **Loan Management:** APIs for loan processing and automated scheduled repayments.
-- **Rate Limiting:** Request throttling mechanism using Bucket4j.
+## Architecture & Database
+This service is designed using a multi-datasource configuration:
+- **Primary DataSource**: Connects to `banking_db` (handles operational data like Customers, Accounts, Loans, Transactions).
+- **Audit DataSource**: Connects to `banking_audit_db` (designed to keep decoupled tracks of sensitive actions and logging).
+
+## Key Features
+- **User & Customer Management:** Role-based access control (`ROLE_CUSTOMER` vs `ROLE_ADMIN`). Endpoints for profile and info retrieval.
+- **Google Authentication:** Secure backend integration acting as an OAuth2 Resource Server to validate Google JWT tokens.
+- **Account Operations:** Supports creating accounts for existing customers, checking balances, exporting statements (Excel format using Apache POI), account freezing & closing.
+- **Transactions Management:** Handle deposits, withdrawals, fund transfers, and detailed transaction histories.
+- **Loan Management:** APIs for loan application, EMI calculation, amortization schedules, approval processes, and scheduled auto-repayments.
+- **Fraud Detection:** Dedicated module and controller to alert, monitor, and flag suspicious transactions or patterns. 
+- **Recurring Payments:** Setup and coordinate automated recurring payments using Schedulers.
+- **Rate Limiting & Logging:** Filter-level `RateLimitFilter` (via Bucket4j) to prevent API abuse, and `LoggingFilter` for transparent requests tracking.
+
+## Project Structure
+- `.../controller` - Exposes REST APIs (`Account`, `Customer`, `FraudAlert`, `Loan`, `RecurringPayment`, `Report`, `Transaction`)
+- `.../service` - Business logic and orchestrations (`AccountService`, `FraudDetectionService`, `ExportService`, etc.)
+- `.../entity` / `dto` - Persistence layers and request/response models.
+- `.../scheduler` - Automated daily tasks with ShedLock (`LoanRepaymentScheduler`, `RecurringPaymentScheduler`).
+- `.../config` - Application configs (Multi-DB Config, Security Config).
+- `.../security` - Filters for JWT handling, Rate Limiting, and Logging.
 
 ## Getting Started
 
 ### Prerequisites
-- **Java 21**
-- **PostgreSQL**
-- **Maven**
+- **Java 21 JDK** installed.
+- **PostgreSQL** installed and running locally.
+- **Maven** build tool.
 
-### Setup
+### Setup & Run
 1. Clone the repository and navigate to the project directory.
-2. Initialize and configure your local PostgreSQL database.
-3. Verify your `application.properties`/`application.yml` for:
-   - Database connection string (`spring.datasource.url`), username, and password.
-   - Any API keys, secret elements, or OAuth2 specific properties (such as Google Provider JWK Set URI).
-4. Run the application via Maven:
+2. Initialize and configure your local PostgreSQL databases named `banking_db` and `banking_audit_db`.
+3. Create user credentials defined in the configuration (e.g. user: `bankadmin` / pass: `bank1234`).
+4. Verify your `src/main/resources/application.yaml` for:
+   - Database connection strings (`spring.datasource.primary...` & `spring.datasource.audit...`).
+   - Keystore settings for SSL/HTTPS configuration (`keystore.p12`).
+   - OAuth2 specific properties (such as Google Provider JWK Set URI).
+5. Run the application via Maven wrapper:
    ```bash
    ./mvnw spring-boot:run
    ```
+By default, the server runs on port **8443** heavily enforcing HTTPS using the configured `keystore.p12`.
 
-## Google Authentication details
-To enable Google Authentication, the backend acts as an OAuth2 Resource Server. Ensure that the correct Google Client IDs are authorized and the `spring.security.oauth2.resourceserver.jwt.issuer-uri` is set up properly in your environment configuration (usually `https://accounts.google.com`).
-Tokens provided by the frontend are validated on the backend before completing secure actions.
+## API Endpoints Overview
+- **Accounts:** `POST /api/v1/accounts`, `GET /api/v1/accounts/{accountId}/balance`, `GET /api/v1/accounts/{accountId}/statement`, `GET /api/v1/accounts/{accountId}/export`
+- **Transactions:** Handled internally or via specific transaction controllers.
+- **Loans:** `POST /api/v1/loans/apply`, `POST /api/v1/loans/calculate-emi`, `PATCH /api/v1/loans/{loanId}/approve`, `POST /api/v1/loans/{loanId}/repay`
+- **Customers:** `GET /api/v1/customers`, `GET /api/v1/customers/me`
+
+*(Note: Always pass the valid Authorization token when making requests to these protected endpoints).*
+
+## Google Authentication Integration
+The backend validates JWT tokens generated by Google, acting as an OAuth2 Resource Server. Ensure that the correct Google Client IDs are authorized and `spring.security.oauth2.resourceserver.jwt.jwk-set-uri` is set up properly in the environment (`https://www.googleapis.com/oauth2/v3/certs`).
+Tokens provided by the frontend are validated locally ensuring a high-security boundary. A custom `JwtService` handles further context generation where necessary.
+
+## Scheduled Tasks & Schedulers
+The project features background jobs managed by Cron expressions and coordinated via **ShedLock** across multiple nodes.
+- **LoanRepaymentScheduler:** Checks daily for due EMIs, verifies account balances, processes deductions, or flags late penalties/defaults on overdue loans.
+- **RecurringPaymentScheduler:** Processes daily standing instructions/recurring transfers between accounts dynamically.
